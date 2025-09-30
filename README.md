@@ -10,7 +10,7 @@ Spring Security & JWT: Para autenticação e autorização.
 
 Spring Data JPA (Hibernate): Para persistência de dados.
 
-SQL Server: Como banco de dados relacional.
+PostgreSQL (Neon): Como banco de dados cloud relacional.
 
 Maven: Para gestão de dependências e build do projeto.
 
@@ -27,114 +27,86 @@ Java Development Kit (JDK) - Versão 17 ou superior
 
 Apache Maven
 
-SQL Server.
-
-SQL Server Management Studio (SSMS).
+Uma conta no Neon com um projeto de banco de dados criado.
 
 Um cliente de API como Postman para testar os endpoints.
 
 ⚙️ Configuração do Ambiente
-Siga estes passos para preparar o seu ambiente local antes de executar a aplicação.
+Siga estes quatro passos para preparar o seu ambiente local antes de executar a aplicação.
 
-2. Configurar o Banco de Dados (SQL Server)
-A aplicação precisa de um banco de dados e de um utilizador para se conectar.
+Passo 1: Clonar o Repositório
+Abra o seu terminal, clone o projeto e navegue para a pasta criada:
 
-a. Crie o Banco de Dados:
-Abra o SSMS, conecte-se ao seu servidor e execute a seguinte query para criar o banco de dados:
+git clone [https://URL-DO-SEU-REPOSITORIO.git](https://URL-DO-SEU-REPOSITORIO.git)
+cd nome-da-pasta-do-projeto
 
-CREATE DATABASE pokedexdb;
--- Cria um novo login para o servidor
-CREATE LOGIN pokemon_user WITH PASSWORD = 'sua_senha_forte_aqui';
+Passo 2: Verificar a Dependência do Banco de Dados
+Este projeto utiliza PostgreSQL. Certifique-se de que o seu ficheiro pom.xml contém a seguinte dependência para o driver do banco de dados:
 
--- Muda para o contexto do seu novo banco de dados
-USE pokedexdb;
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <scope>runtime</scope>
+</dependency>
 
--- Associa esse login a um utilizador dentro do banco
-CREATE USER pokemon_user FOR LOGIN pokemon_user;
+Passo 3: Obter as Credenciais de Conexão do Neon
+Aceda ao seu painel (dashboard) no Neon.
 
--- Concede as permissões necessárias ao utilizador
-ALTER ROLE db_owner ADD MEMBER pokemon_user;
+Selecione o seu projeto.
 
-3. Configurar as Variáveis de Ambiente
-As configurações de conexão com o banco de dados estão no ficheiro src/main/resources/application.properties. Abra este ficheiro e edite as seguintes linhas com as suas credenciais:
+No painel principal, encontre a secção Connection Details.
 
-# Endereço do seu servidor e nome do banco de dados
-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=pokedexdb;encrypt=true;trustServerCertificate=true
+Copie a string de conexão, que terá o formato: postgres://<user>:<password>@<host>/<dbname>.
 
-# Utilizador e senha que configurou no passo anterior
-spring.datasource.username=pokemon_user
-spring.datasource.password=sua_senha_forte_aqui
+Passo 4: Configurar as Variáveis de Ambiente no Projeto
+Abra o ficheiro src/main/resources/application.properties e preencha as seguintes linhas com os dados que obteve do Neon no passo anterior:
 
-Atenção: Se estiver a usar uma instância nomeada do SQL Server (como SQLEXPRESS), a sua URL pode precisar de ser ajustada: jdbc:sqlserver://localhost\\SQLEXPRESS;...
+# URL de conexão com o PostgreSQL do Neon
+# Substitua <host>, <dbname>, <user> e <password> com os seus dados
+spring.datasource.url=jdbc:postgresql://<host>/<dbname>?sslmode=require
+spring.datasource.username=<user>
+spring.datasource.password=<password>
+
+# Dialeto do Hibernate para PostgreSQL
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# Gestão automática do schema (cria/atualiza tabelas automaticamente)
+spring.jpa.hibernate.ddl-auto=update
+
+Atenção: O parâmetro ?sslmode=require no final da URL é obrigatório para se conectar ao Neon.
 
 ▶️ Como Executar o Projeto
-Com o ambiente configurado, pode executar a aplicação.
+Com o ambiente configurado, pode executar a aplicação de duas formas:
 
 Via IDE (Recomendado)
-Importe o projeto para a sua IDE favorita (IntelliJ IDEA, Eclipse, VS Code).
+Importe o projeto para a sua IDE favorita (IntelliJ IDEA, Eclipse, etc.).
 
-A IDE deverá detetar que é um projeto Maven e descarregar as dependências automaticamente.
+A IDE irá descarregar as dependências do Maven automaticamente.
 
-Encontre a classe principal PokemonFinalProjectApplication.java.
-
-Execute o método main() desta classe. A aplicação irá arrancar.
+Encontre a classe principal PokemonFinalProjectApplication.java e execute o método main().
 
 Via Linha de Comando (Maven)
-Navegue até à pasta raiz do projeto e execute o seguinte comando no seu terminal:
-
 mvn spring-boot:run
 
-A aplicação irá compilar, descarregar as dependências (na primeira vez) e iniciar o servidor na porta 8080.
+A aplicação irá iniciar o servidor na porta 8080 e ligar-se ao seu banco de dados Neon na cloud.
 
 🚀 Acessando a API
-Após iniciar a aplicação, pode interagir com os endpoints.
-
 Documentação (Swagger)
-Para uma visualização interativa de todos os endpoints disponíveis, aceda à documentação do Swagger no seu navegador:
+Para uma visualização interativa de todos os endpoints, aceda à documentação do Swagger no seu navegador:
 http://localhost:8080/swagger-ui.html
 
-A partir do Swagger, pode testar os endpoints, ver os modelos de dados e entender os requisitos de autenticação para cada rota.
-
-Endpoints Principais
-Autenticação:
-
-POST /api/auth/register/professor: Regista um novo Professor.
-
-POST /api/auth/register/treinador: Regista um novo Treinador.
-
-POST /api/auth/authenticate: Autentica um utilizador e retorna um token JWT.
-
-Pokémon:
-
-GET /api/v1/pokemon: Lista todos os Pokémons.
-
-POST /api/v1/pokemon: Cria um novo Pokémon (requer autenticação como ROLE_PROFESSOR).
-
-Utilizadores (Treinadores e Professores):
-
-As rotas em /api/v1/treinadores e /api/v1/professores permitem visualizar e modificar dados. A modificação de dados requer que o utilizador autenticado seja o dono do recurso ou um ROLE_PROFESSOR.API REST - Projeto Final Pokédex
-API REST desenvolvida como projeto final, simulando uma Pokédex onde utilizadores (Professores e Treinadores) podem registar-se, autenticar-se e interagir com uma base de dados de Pokémons. Professores têm a capacidade de criar novos Pokémons.
-
-🧪 Testando com o Postman
-Para facilitar os testes, uma coleção do Postman com todas as requisições da API está disponível.
-
-Importação Manual (JSON)
-Alternativamente, pode importar a coleção usando o JSON bruto:
-
-Abra o Postman e vá para File > Import.
-
-Copie e cole o conteúdo JSON abaixo.
+Testando com o Postman
+Use a coleção do Postman para testar os endpoints.
 
 <details>
-<summary>Clique para ver o JSON da Coleção</summary>
+<summary>Ou, clique para importar a coleção via JSON</summary>
 
 {
 	"info": {
 		"_postman_id": "ecc28738-036b-4058-af47-ef47d048366b",
 		"name": "Pokemon API Project",
 		"schema": "[https://schema.getpostman.com/json/collection/v2.0.0/collection.json](https://schema.getpostman.com/json/collection/v2.0.0/collection.json)",
-		"_exporter_id": "27253242",
-		"_collection_link": "[https://www.postman.com/thasso/workspace/sistemascoorporativos/collection/27253242-ecc28738-036b-4058-af47-ef47d048366b?action=share&source=collection_link&creator=27253242](https://www.postman.com/thasso/workspace/sistemascoorporativos/collection/27253242-ecc28738-036b-4058-af47-ef47d048366b?action=share&source=collection_link&creator=27253242)"
+		"_exporter_id": "27253242"
 	},
 	"item": [
 		{
@@ -180,12 +152,6 @@ Copie e cole o conteúdo JSON abaixo.
 				{
 					"name": "Autenticar (Login)",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjY5MzYzLCJleHAiOjE3NTkyNzA4MDN9.SeKtw7XLZ0UDejBOqVmLeMIsLscjUdCfMDiF2sqrGw8"
-							}
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -226,28 +192,17 @@ Copie e cole o conteúdo JSON abaixo.
 					"response": []
 				},
 				{
-					"name": "Listar_AllPokemons(PÚBLICO)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": ""
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/pokemon"
-					},
-					"response": []
-				},
-				{
 					"name": "Criar Pokémon (PROTEGIDO - Professor)",
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": {
-								"token": "{{vault:authorization-secret}}"
-							}
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SEU_TOKEN_JWT_AQUI",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [],
@@ -269,9 +224,13 @@ Copie e cole o conteúdo JSON abaixo.
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjYzNjgwLCJleHAiOjE3NTkyNjUxMjB9.0U0-aRBPEZB5NQaug_qkxi-6-v-n1N6wxEiIERfJuts"
-							}
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SEU_TOKEN_JWT_AQUI",
+									"type": "string"
+								}
+							]
 						},
 						"method": "DELETE",
 						"header": [],
@@ -289,9 +248,13 @@ Copie e cole o conteúdo JSON abaixo.
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2hAcG9rZS5nbWFpbC5iciIsImlhdCI6MTc1OTE3ODE0MywiZXhwIjoxNzU5MTc5NTgzfQ.Ts32ft6QXaoOJOIbpjs25w513g7H7XELxUgldtPAiso"
-							}
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SEU_TOKEN_JWT_AQUI",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
@@ -304,9 +267,13 @@ Copie e cole o conteúdo JSON abaixo.
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjU4NjIyLCJleHAiOjE3NTkyNjAwNjJ9.n7vqy2TpPeILvIS2jengnXyGmCr7WBdgVxAHgqa5FC4"
-							}
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SEU_TOKEN_JWT_AQUI",
+									"type": "string"
+								}
+							]
 						},
 						"method": "DELETE",
 						"header": [],
@@ -319,15 +286,19 @@ Copie e cole o conteúdo JSON abaixo.
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjU4NjIyLCJleHAiOjE3NTkyNjAwNjJ9.n7vqy2TpPeILvIS2jengnXyGmCr7WBdgVxAHgqa5FC4"
-							}
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SEU_TOKEN_JWT_AQUI",
+									"type": "string"
+								}
+							]
 						},
 						"method": "PATCH",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nome\": \"Professor \",\r\n    \"especialidade\": \"Pokémon\"\r\n}",
+							"raw": "{\r\n    \"nome\": \"Professor Carvalho Atualizado\",\r\n    \"especialidade\": \"Evolução Pokémon\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -348,9 +319,13 @@ Copie e cole o conteúdo JSON abaixo.
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": {
-								"token": "{{vault:authorization-secret}}"
-							}
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SEU_TOKEN_JWT_AQUI",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [],
@@ -377,15 +352,19 @@ Copie e cole o conteúdo JSON abaixo.
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjYzNjgwLCJleHAiOjE3NTkyNjUxMjB9.0U0-aRBPEZB5NQaug_qkxi-6-v-n1N6wxEiIERfJuts"
-							}
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SEU_TOKEN_JWT_AQUI",
+									"type": "string"
+								}
+							]
 						},
 						"method": "PATCH",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nome\": \"sads\",\r\n    \"insignias\": 2\r\n}",
+							"raw": "{\r\n    \"nome\": \"Ash Atualizado\",\r\n    \"insignias\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -401,315 +380,13 @@ Copie e cole o conteúdo JSON abaixo.
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjYzNjgwLCJleHAiOjE3NTkyNjUxMjB9.0U0-aRBPEZB5NQaug_qkxi-6-v-n1N6wxEiIERfJuts"
-							}
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/treinadores/2"
-					},
-					"response": []
-				}
-			]
-		}
-	]
-}
-
-</details>🧪 Testando com o Postman
-Para facilitar os testes, uma coleção do Postman com todas as requisições da API está disponível.
-
-Importação Rápida (Recomendado)
-Clique no botão abaixo para importar a coleção diretamente para o seu Postman:
-
-Importação Manual (JSON)
-Alternativamente, pode importar a coleção usando o JSON bruto:
-
-Abra o Postman e vá para File > Import.
-
-Selecione a aba Raw text.
-
-Copie e cole o conteúdo JSON abaixo.
-
-<details>
-<summary>Clique para ver o JSON da Coleção</summary>
-
-{
-	"info": {
-		"_postman_id": "ecc28738-036b-4058-af47-ef47d048366b",
-		"name": "Pokemon API Project",
-		"schema": "[https://schema.getpostman.com/json/collection/v2.0.0/collection.json](https://schema.getpostman.com/json/collection/v2.0.0/collection.json)",
-		"_exporter_id": "27253242",
-		"_collection_link": "[https://www.postman.com/thasso/workspace/sistemascoorporativos/collection/27253242-ecc28738-036b-4058-af47-ef47d048366b?action=share&source=collection_link&creator=27253242](https://www.postman.com/thasso/workspace/sistemascoorporativos/collection/27253242-ecc28738-036b-4058-af47-ef47d048366b?action=share&source=collection_link&creator=27253242)"
-	},
-	"item": [
-		{
-			"name": "Autenticação",
-			"item": [
-				{
-					"name": "Registar Professor",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"nome\": \"Professor Carvalho\",\n    \"email\": \"carvalho@poke.gmail.br\",\n    \"senha\": \"password123\",\n    \"especialidade\": \"Pokémons Iniciais\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SEU_TOKEN_JWT_AQUI",
+									"type": "string"
 								}
-							}
-						},
-						"url": "http://localhost:8080/api/auth/register/professor",
-						"description": "Regista um novo utilizador com a role de Professor. A resposta contém um token JWT."
-					},
-					"response": []
-				},
-				{
-					"name": "Registar Treinador",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"nome\": \"Ash Ketchum\",\n    \"email\": \"ash@poke.gmail.br\",\n    \"senha\": \"pikachu123\",\n    \"insignias\": 0\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/auth/register/treinador"
-					},
-					"response": []
-				},
-				{
-					"name": "Autenticar (Login)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjY5MzYzLCJleHAiOjE3NTkyNzA4MDN9.SeKtw7XLZ0UDejBOqVmLeMIsLscjUdCfMDiF2sqrGw8"
-							}
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"carvalho@poke.gmail.br\",\n    \"senha\": \"password123\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/auth/authenticate",
-						"description": "Faz o login com um utilizador existente para obter um token JWT. **Copie o token da resposta para usar nas requisições protegidas!**"
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Pokémons",
-			"item": [
-				{
-					"name": "Listar Todos os Pokémons (Público)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/pokemon"
-					},
-					"response": []
-				},
-				{
-					"name": "Buscar Pokémon por ID (Público)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/pokemon/25"
-					},
-					"response": []
-				},
-				{
-					"name": "Listar_AllPokemons(PÚBLICO)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": ""
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/pokemon"
-					},
-					"response": []
-				},
-				{
-					"name": "Criar Pokémon (PROTEGIDO - Professor)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{vault:authorization-secret}}"
-							}
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"nome\": \"Gengar\",\n    \"tipo1\": \"Ghost\",\n    \"tipo2\": \"Poison\",\n    \"hp\": 60,\n    \"ataque\": 65,\n    \"defesa\": 60,\n    \"especial\": 130,\n    \"velocidade\": 110\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/v1/pokemon"
-					},
-					"response": []
-				},
-				{
-					"name": "Apagar Pokémon (PROTEGIDO - Professor)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjYzNjgwLCJleHAiOjE3NTkyNjUxMjB9.0U0-aRBPEZB5NQaug_qkxi-6-v-n1N6wxEiIERfJuts"
-							}
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/pokemon/150"
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Professores",
-			"item": [
-				{
-					"name": "Buscar Professor por ID (PROTEGIDO)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2hAcG9rZS5nbWFpbC5iciIsImlhdCI6MTc1OTE3ODE0MywiZXhwIjoxNzU5MTc5NTgzfQ.Ts32ft6QXaoOJOIbpjs25w513g7H7XELxUgldtPAiso"
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/professores/1"
-					},
-					"response": []
-				},
-				{
-					"name": "Deletar Professor por ID (PROTEGIDO)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjU4NjIyLCJleHAiOjE3NTkyNjAwNjJ9.n7vqy2TpPeILvIS2jengnXyGmCr7WBdgVxAHgqa5FC4"
-							}
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/professores/1"
-					},
-					"response": []
-				},
-				{
-					"name": "Atualizar Professor por ID (PROTEGIDO)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjU4NjIyLCJleHAiOjE3NTkyNjAwNjJ9.n7vqy2TpPeILvIS2jengnXyGmCr7WBdgVxAHgqa5FC4"
-							}
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nome\": \"Professor \",\r\n    \"especialidade\": \"Pokémon\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/v1/professores/1"
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Utilizadores",
-			"item": [
-				{
-					"name": "Listar Todos os Utilizadores (PROTEGIDO)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{vault:authorization-secret}}"
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/usuario"
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Treinadores",
-			"item": [
-				{
-					"name": "Buscar Treinador por ID (Público)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/v1/treinadores/1"
-					},
-					"response": []
-				},
-				{
-					"name": "Atualizar Treinador",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjYzNjgwLCJleHAiOjE3NTkyNjUxMjB9.0U0-aRBPEZB5NQaug_qkxi-6-v-n1N6wxEiIERfJuts"
-							}
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nome\": \"sads\",\r\n    \"insignias\": 2\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/v1/treinadores/2"
-					},
-					"response": []
-				},
-				{
-					"name": "Deletar Treinador",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjYXJ2YWxob0Bwb2tlLmdtYWlsLmJyIiwiaWF0IjoxNzU5MjYzNjgwLCJleHAiOjE3NTkyNjUxMjB9.0U0-aRBPEZB5NQaug_qkxi-6-v-n1N6wxEiIERfJuts"
-							}
+							]
 						},
 						"method": "DELETE",
 						"header": [],
@@ -723,4 +400,3 @@ Copie e cole o conteúdo JSON abaixo.
 }
 
 </details>
-
