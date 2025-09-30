@@ -15,15 +15,12 @@ public class UsuarioService {
     public List<Usuario> findAll() {
         return usuarioRepository.findAll();
     }
-
     public Optional<Usuario> findById(Integer id) {
         return usuarioRepository.findById(id);
     }
-
     public Optional<Usuario> findByEmail(String email){
         return usuarioRepository.findByEmail(email);
     }
-
     public void deleteById(Integer id) {
         if (!usuarioRepository.existsById(id)) {
             throw new ResourceNotFoundException("Não é possível deletar. Usuário não encontrado com o ID: " + id);

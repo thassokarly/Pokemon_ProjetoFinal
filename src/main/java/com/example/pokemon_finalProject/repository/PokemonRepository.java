@@ -1,5 +1,4 @@
 package com.example.pokemon_finalProject.repository;
-
 import com.example.pokemon_finalProject.model.Pokemon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

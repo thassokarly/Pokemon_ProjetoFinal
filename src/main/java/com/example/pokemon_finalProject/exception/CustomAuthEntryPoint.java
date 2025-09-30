@@ -1,5 +1,4 @@
 package com.example.pokemon_finalProject.exception;
-
 import com.example.pokemon_finalProject.dto.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

@@ -36,7 +36,6 @@ public class Professor extends Usuario {
         this.setSenha(senha);
         this.especialidade = especialidade;
     }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_PROFESSOR"));

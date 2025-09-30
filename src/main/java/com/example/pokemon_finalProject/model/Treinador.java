@@ -31,11 +31,9 @@ public class Treinador extends Usuario {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_TREINADOR"));
     }
-
     public int getInsignias() {
         return insignias;
     }
-
     public void setInsignias(int insignias) {
         this.insignias = insignias;
     }
