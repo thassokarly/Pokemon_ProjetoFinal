@@ -37,9 +37,6 @@ Siga estes quatro passos para preparar o seu ambiente local antes de executar a 
 Passo 1: Clonar o Repositório
 Abra o seu terminal, clone o projeto e navegue para a pasta criada:
 
-git clone [https://URL-DO-SEU-REPOSITORIO.git](https://URL-DO-SEU-REPOSITORIO.git)
-cd nome-da-pasta-do-projeto
-
 Passo 2: Verificar a Dependência do Banco de Dados
 Este projeto utiliza PostgreSQL. Certifique-se de que o seu ficheiro pom.xml contém a seguinte dependência para o driver do banco de dados:
 
