@@ -60,8 +60,8 @@ Abra o ficheiro src/main/resources/application.properties e preencha as seguinte
 
 # URL de conexão com o PostgreSQL do Neon
 # Substitua <host>, <dbname>, <user> e <password> com os seus dados
-spring.datasource.url=jdbc:postgresql://<host>/<dbname>?sslmode=require
-spring.datasource.username=<user>
+spring.datasource.url=jdbc:postgresql://ep-twilight-recipe-aecl1rgf-pooler.c-2.us-east-2.aws.neon.tech/neondb?user=neondb_owner&password=npg_gtGj5xD9AsSE&sslmode=require&channelBinding=require
+spring.datasource.username=<thasso>
 spring.datasource.password=<password>
 
 # Dialeto do Hibernate para PostgreSQL
@@ -76,7 +76,7 @@ Atenção: O parâmetro ?sslmode=require no final da URL é obrigatório para se
 Com o ambiente configurado, pode executar a aplicação de duas formas:
 
 Via IDE (Recomendado)
-Importe o projeto para a sua IDE favorita (IntelliJ IDEA, Eclipse, etc.).
+Importe o projeto para a sua IDE IntelliJ IDEA
 
 A IDE irá descarregar as dependências do Maven automaticamente.
 
