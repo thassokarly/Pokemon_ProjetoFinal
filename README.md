@@ -55,6 +55,9 @@ No painel principal, encontre a secção Connection Details.
 
 Copie a string de conexão, que terá o formato: postgres://<user>:<password>@<host>/<dbname>.
 
+user thasso
+senha: npg_gtGj5xD9AsSE
+
 Passo 4: Configurar as Variáveis de Ambiente no Projeto
 Abra o ficheiro src/main/resources/application.properties e preencha as seguintes linhas com os dados que obteve do Neon no passo anterior:
 
